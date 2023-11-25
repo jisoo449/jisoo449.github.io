@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "This post demonstrates post content styles"
-categories: junk
+categories: 바보
 author: "Bart Simpson"
 meta: "Springfield"
 ---
