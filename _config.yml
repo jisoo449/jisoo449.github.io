@@ -24,7 +24,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: 정보보안 취준생의 기록
+title: Secretly Secured
 email: jisoo449@naver.com
 author: jisoo449
 
@@ -157,7 +157,7 @@ yat:
 # Page default value
 # defaults:
 #   home:
-#     heading: "Your awesome heading"
+heading: Secretly Secured
 #     subheading: "Your awesome subheading"
 #     banner: "Your image url"
 
