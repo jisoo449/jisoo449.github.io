@@ -157,8 +157,8 @@ yat:
 # Page default value
 # defaults:
 #   home:
-heading: Secretly Secured
-#     subheading: "Your awesome subheading"
+heading: 정보보안 전문가로 거듭나기  #see thru security
+subheading: TIL, Portfolio를 보고 가세요!
 #     banner: "Your image url"
 
 # Banner default settings
