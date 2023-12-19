@@ -24,14 +24,16 @@
   ```url
   http://127.0.0.1:4000/{프로젝트 이름}
   ```
-<br/>
-
+  
 ### 1.2. 깃헙 페이지
-url : [https://jisoo449.github.io/jisu_sec/](https://jisoo449.github.io/jisu_sec/)
+url : [https://jisoo449.github.io/jisu_sec/](https://jisoo449.github.io/jisu_sec/)  
+
+<br/>
 
 ## 2. 지킬 페이지 편집
 ### 2.1. 사진 삽입
   ```
   ![사진 이름](https://jisoo449.github.io/jisu_sec/assets/images/post/사진이름.확장자)
   ```
+<br/>
 ### 2.2. 폰트 수정
