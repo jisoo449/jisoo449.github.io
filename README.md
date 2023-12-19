@@ -2,7 +2,7 @@
 보안 공부를 하며 학습한 지식들을 정리합니다.  
 본 지킬 페이지는 [https://github.com/jeffreytse/jekyll-theme-yat](https://github.com/jeffreytse/jekyll-theme-yat)의 무료 템플릿을 사용하였습니다.
 
-##### 목차
+### 목차
 1. [실행 방법](#1-실행-방법)  
   1.1. [로컬](#11-로컬)  
   1.2. [깃헙 페이지](#12-깃헙-페이지)  
