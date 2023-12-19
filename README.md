@@ -15,3 +15,11 @@
   http://127.0.0.1:4000/{프로젝트 이름}
   ```
 ### 깃헙 페이지
+url : [https://jisoo449.github.io/jisu_sec/](https://jisoo449.github.io/jisu_sec/)
+
+### 지킬 페이지 편집
+- 사진 삽입 방법
+  ```
+  ![사진 이름](https://jisoo449.github.io/jisu_sec/assets/images/post/사진이름.확장자)
+  ```
+- 폰트 수정
