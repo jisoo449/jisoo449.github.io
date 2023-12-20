@@ -40,3 +40,4 @@ url : [https://jisoo449.github.io/jisu_sec/](https://jisoo449.github.io/jisu_sec
 
 ### 3. 구글 검색 노출
 참고: [https://inasie.github.io/it%EC%9D%BC%EB%B0%98/3/](https://inasie.github.io/it%EC%9D%BC%EB%B0%98/3/)  
+https://blog.naver.com/PostView.naver?blogId=boradio&logNo=223068379371&redirect=Dlog&widgetTypeCall=true&directAccess=false
