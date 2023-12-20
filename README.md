@@ -9,6 +9,7 @@
 2. [지킬 페이지 편집](#2-지킬-페이지-편집)  
   2.1. [사진 삽입](#21-사진-삽입)  
   2.2. [폰트 수정](#22-폰트-수정)  
+3. [구글 검색 노출](#3-구글-검색-노출)
 
 <br/>
 
@@ -36,3 +37,6 @@ url : [https://jisoo449.github.io/jisu_sec/](https://jisoo449.github.io/jisu_sec
   ![사진 이름](https://jisoo449.github.io/jisu_sec/assets/images/post/사진이름.확장자)
   ```
 ### 2.2. 폰트 수정
+
+### 3. 구글 검색 노출
+참고: [https://inasie.github.io/it%EC%9D%BC%EB%B0%98/3/](https://inasie.github.io/it%EC%9D%BC%EB%B0%98/3/)  
