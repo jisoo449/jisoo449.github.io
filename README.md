@@ -1,5 +1,5 @@
-# Jisu-Sec
-보안 공부를 하며 학습한 지식들을 정리합니다.  
+# Byte-Jisoo
+공부를 하며 학습한 지식들을 정리합니다.  
 본 지킬 페이지는 [https://github.com/jeffreytse/jekyll-theme-yat](https://github.com/jeffreytse/jekyll-theme-yat)의 무료 템플릿을 사용하였습니다.
 
 ## 목차
