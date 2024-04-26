@@ -1,7 +1,9 @@
 /**
  * Animation for transparent header
+ * 헤더 색상 변경
  */
-html {
+@import url('https://fonts.googleapis.com/css2?family=Jersey+10&family=Sunflower:wght@300&display=swap');
+ html {
   &[data-header-transparent] {
     header.site-header {
       position: fixed;
@@ -17,7 +19,7 @@ html {
 
       &.site-header {
         .site-brand-inner, .page-link {
-          color: #fff;
+          color: #4e2e3f;
           transition: 0.1s color;
         }
 
@@ -604,28 +606,33 @@ html {
 
   .page-banner-inner {
     @include vertical-center(relative);
-
-    color: $banner-text-color;
     padding: 10px 5px;
-    text-shadow: 1px 1px 2px #33333355;
+    //text-shadow: -1px 0 #e28d67, 0 1px #e28d67, 1px 0 #e28d67, 0 -1px #e28d67; //테두리
+    //text-shadow: 1px 1px 2px #e28d67;//#33333355; //그림자
 
     & > *:first-child {
       margin: 0;
 
       > :nth-child(1) {
-        @include relative-font-size(3.9);
+        @include relative-font-size(3.9);    
+        font-family: "Jersey 10", sans-serif;
+        font-style: normal;
+        font-size:100px;
+        color: #f89b79;
         letter-spacing: -1px;
         margin-bottom: 0.1em;
         font-weight: normal;
         transition: 0.2s all;
-
+        text-shadow: 1px 1px 2px #e1e2ae;
         @include media-query($on-palm) {
           @include relative-font-size(1.975);
         }
       }
 
       > :nth-child(2) {
-        font-weight: lighter;
+        font-family: "Sunflower", sans-serif;
+        font-style: normal;
+        color:#fcae83;
         margin-bottom: 0.8em;
         transition: 0.2s all;
 
