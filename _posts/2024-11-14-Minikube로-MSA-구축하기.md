@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/d0ce6464-cdf5-4aa5-aa08-fb13d8b2f1b1)---
+---
 layout: post
 title: Minikube로 MSA 실습하기
 author: 박지수
