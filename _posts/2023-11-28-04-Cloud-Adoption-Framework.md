@@ -13,7 +13,7 @@ cross cutting 측면 모델에서 거버넌스에 해당.
 
 참고: https://wa.aws.amazon.com/wat.map.ko.html
 
-![클라우드 어덥션 프레임워크](https://jisoo449.github.io/jisu_sec/assets/images/post/클라우드-어덥션-프레임워크.png)
+![클라우드 어덥션 프레임워크](https://jisoo449.github.io/assets/images/post/클라우드-어덥션-프레임워크.png)
 
 1. 구상  
 
